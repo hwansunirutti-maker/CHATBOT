@@ -55,7 +55,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   const [newSteps, setNewSteps] = useState('');
   const [newErrorCode, setNewErrorCode] = useState('');
   const [newTags, setNewTags] = useState('');
-  const [showAdminGuide, setShowAdminGuide] = useState(false);
+  const [showAdminGuide, setShowAdminGuide] = useState(true);
   const [copiedRules, setCopiedRules] = useState(false);
 
   // Filter items
@@ -168,21 +168,21 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
         </div>
 
         {/* Admin Firebase Firestore Connection Guide */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-xs space-y-3">
+        <div className="bg-gradient-to-r from-amber-950/30 via-slate-900 to-slate-900 border-2 border-amber-500/50 rounded-2xl p-4 sm:p-5 text-xs space-y-3 shadow-lg shadow-amber-500/5">
           <div 
             onClick={() => setShowAdminGuide(!showAdminGuide)}
             className="flex items-center justify-between cursor-pointer select-none"
           >
-            <div className="flex items-center gap-2">
-              <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <div className="flex items-center gap-2.5">
+              <span className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-400/40 shrink-0">
                 <Key className="w-4 h-4" />
               </span>
               <div>
-                <span className="font-bold text-white text-xs sm:text-sm">
+                <span className="font-bold text-amber-300 text-xs sm:text-sm flex items-center gap-1.5">
                   คำแนะนำสำหรับผู้ดูแลระบบ: วิธีเปิดสิทธิ์ดึงข้อมูลสดจาก Firebase ของ punehod.vercel.app
                 </span>
-                <p className="text-[11px] text-slate-400">
-                  โปรเจกต์: punehod-a4 • ฐานข้อมูล: ai-studio-punehod-28891ace-0f2a-422b-bec4-570fdf020372
+                <p className="text-[11px] text-slate-300">
+                  โปรเจกต์: <strong className="text-white">punehod-a4</strong> • ฐานข้อมูล: <strong className="text-white">ai-studio-punehod-28891ace-0f2a-422b-bec4-570fdf020372</strong>
                 </p>
               </div>
             </div>
