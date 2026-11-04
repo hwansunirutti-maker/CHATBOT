@@ -47,9 +47,12 @@ if (apiKey) {
   });
 }
 
-// 1. Sync endpoint - probes punehod.vercel.app in real-time
+// 1. Sync endpoint - probes punehod.vercel.app & Firestore in real-time
 app.get('/api/punehod/sync', async (_req: Request, res: Response) => {
   const startTime = Date.now();
+  const FIRESTORE_API_KEY = 'AIzaSyClC004QRovGO78Hi3tf_Ldsz9ir75G0G0';
+  const FIRESTORE_URL = 'https://firestore.googleapis.com/v1/projects/punehod-a4/databases/ai-studio-punehod-28891ace-0f2a-422b-bec4-570fdf020372/documents/manuals';
+
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 6000);
@@ -60,6 +63,43 @@ app.get('/api/punehod/sync', async (_req: Request, res: Response) => {
     clearTimeout(timeout);
     const latency = Date.now() - startTime;
 
+    let firestoreStatusNote = '';
+
+    // Attempt direct Firestore REST query to punehod-a4
+    try {
+      const fsRes = await fetch(`${FIRESTORE_URL}?key=${FIRESTORE_API_KEY}`);
+      if (fsRes.ok) {
+        const fsData = await fsRes.json();
+        if (Array.isArray(fsData.documents) && fsData.documents.length > 0) {
+          const parsedItems: KnowledgeItem[] = fsData.documents.map((d: any) => {
+            const f = d.fields || {};
+            const id = d.name.split('/').pop() || `fs-${Date.now()}`;
+            return {
+              id: id,
+              title: f.title?.stringValue || 'คู่มือ PUNEHOD',
+              category: f.category?.stringValue || 'troubleshooting',
+              categoryName: f.categoryName?.stringValue || 'การแก้ปัญหา & รหัสข้อผิดพลาด',
+              description: f.description?.stringValue || '',
+              steps: f.steps?.arrayValue?.values?.map((v: any) => v.stringValue) || [],
+              errorCode: f.errorCode?.stringValue,
+              tags: f.tags?.arrayValue?.values?.map((v: any) => v.stringValue) || ['PUNEHOD'],
+              sourceUrl: 'https://punehod.vercel.app/#categories',
+              views: Number(f.views?.integerValue || 1),
+              downloads: Number(f.downloads?.integerValue || 0),
+              updatedAt: f.updatedAt?.stringValue || new Date().toISOString(),
+              isPinned: !!f.isPinned?.booleanValue
+            };
+          });
+          knowledgeItems = parsedItems;
+          firestoreStatusNote = `• ซิงค์สดจาก Firestore สำเร็จ (${parsedItems.length} รายการ)`;
+        }
+      } else if (fsRes.status === 403) {
+        firestoreStatusNote = '• Firestore ติดสิทธิ์ 403 Rules (ดึงจากแคชคลังความรู้ 8 รายการ)';
+      }
+    } catch {
+      firestoreStatusNote = '';
+    }
+
     lastSyncInfo = {
       sourceUrl: PUNEHOD_URL,
       lastSyncedAt: new Date().toISOString(),
@@ -67,7 +107,7 @@ app.get('/api/punehod/sync', async (_req: Request, res: Response) => {
       latencyMs: latency,
       totalDocuments: knowledgeItems.length,
       statusText: response.ok
-        ? `เชื่อมต่อสำเร็จ (HTTP ${response.status} • ความเร็วตอบสนอง ${latency}ms)`
+        ? `เชื่อมต่อเว็บไซต์สำเร็จ (${latency}ms) ${firestoreStatusNote}`
         : `เซิร์ฟเวอร์ตอบกลับสถานะ HTTP ${response.status}`,
       version: '3.4.2'
     };

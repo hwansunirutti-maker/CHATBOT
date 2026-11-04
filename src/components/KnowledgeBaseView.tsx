@@ -17,7 +17,11 @@ import {
   Video, 
   FileText,
   ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  Key,
+  Copy,
+  Check,
+  ChevronDown
 } from 'lucide-react';
 import { KnowledgeItem, KnowledgeCategory, SyncStatus } from '../types/punehod';
 
@@ -51,6 +55,8 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   const [newSteps, setNewSteps] = useState('');
   const [newErrorCode, setNewErrorCode] = useState('');
   const [newTags, setNewTags] = useState('');
+  const [showAdminGuide, setShowAdminGuide] = useState(false);
+  const [copiedRules, setCopiedRules] = useState(false);
 
   // Filter items
   const filteredItems = items.filter(item => {
@@ -159,6 +165,93 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
             </div>
 
           </div>
+        </div>
+
+        {/* Admin Firebase Firestore Connection Guide */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-xs space-y-3">
+          <div 
+            onClick={() => setShowAdminGuide(!showAdminGuide)}
+            className="flex items-center justify-between cursor-pointer select-none"
+          >
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <Key className="w-4 h-4" />
+              </span>
+              <div>
+                <span className="font-bold text-white text-xs sm:text-sm">
+                  คำแนะนำสำหรับผู้ดูแลระบบ: วิธีเปิดสิทธิ์ดึงข้อมูลสดจาก Firebase ของ punehod.vercel.app
+                </span>
+                <p className="text-[11px] text-slate-400">
+                  โปรเจกต์: punehod-a4 • ฐานข้อมูล: ai-studio-punehod-28891ace-0f2a-422b-bec4-570fdf020372
+                </p>
+              </div>
+            </div>
+            <button className="text-slate-400 hover:text-white flex items-center gap-1 text-[11px]">
+              <span>{showAdminGuide ? 'ซ่อนคำแนะนำ' : 'ดูวิธีตั้งค่า (1 นาที)'}</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAdminGuide ? 'rotate-180' : ''}`} />
+            </button>
+          </div>
+
+          {showAdminGuide && (
+            <div className="pt-3 border-t border-slate-800/80 space-y-3 animate-in fade-in">
+              <p className="text-slate-300 leading-relaxed">
+                เนื่องจาก Firestore ของโปรเจกต์ <strong className="text-white">punehod-a4</strong> มีกฎความปลอดภัยตั้งต้นบล็อกการอ่านจากภายนอก (<code className="text-rose-300 font-mono">403 Permission Denied</code>) ท่านสามารถเปิดให้อ่านได้ทันทีโดยทำตาม 3 ขั้นตอนนี้ใน Firebase Console:
+              </p>
+
+              <div className="space-y-2">
+                <div className="p-3 bg-slate-950 rounded-xl border border-slate-800/80 space-y-1">
+                  <div className="font-bold text-blue-400">ขั้นตอนที่ 1: เข้า Firebase Console</div>
+                  <div className="text-slate-300">
+                    ไปที่ <a href="https://console.firebase.google.com/" target="_blank" rel="noreferrer" className="text-blue-400 underline font-mono">console.firebase.google.com</a> &gt; เลือกโปรเจกต์ <strong>punehod-a4</strong>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-slate-950 rounded-xl border border-slate-800/80 space-y-1">
+                  <div className="font-bold text-blue-400">ขั้นตอนที่ 2: ไปที่ Firestore Rules</div>
+                  <div className="text-slate-300">
+                    เลือกเมนู <strong>Firestore Database</strong> &gt; แท็บ <strong>Rules</strong> &gt; วางกฎด้านล่างนี้เพื่อให้สิทธิ์อ่านคู่มือแบบสาธารณะ (โดยการแก้ไขยังต้องใช้สิทธิ์แอดมินเหมือนเดิม):
+                  </div>
+                  
+                  <div className="relative mt-2">
+                    <pre className="p-3 bg-slate-900 border border-slate-800 rounded-lg text-emerald-300 font-mono text-[11px] overflow-x-auto">
+{`rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /manuals/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /categories/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}`}
+                    </pre>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigator.clipboard.writeText(`rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /manuals/{document=**} {\n      allow read: if true;\n      allow write: if request.auth != null;\n    }\n    match /categories/{document=**} {\n      allow read: if true;\n      allow write: if request.auth != null;\n    }\n  }\n}`);
+                        setCopiedRules(true);
+                        setTimeout(() => setCopiedRules(false), 2000);
+                      }}
+                      className="absolute right-2 top-2 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded text-[10px] flex items-center gap-1"
+                    >
+                      {copiedRules ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      <span>{copiedRules ? 'คัดลอกแล้ว' : 'คัดลอก Rules'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-slate-950 rounded-xl border border-slate-800/80 space-y-1">
+                  <div className="font-bold text-blue-400">ขั้นตอนที่ 3: กด Publish แล้วคลิกปุ่ม "ซิงค์ฐานข้อมูลสดทันที"</div>
+                  <div className="text-slate-300">
+                    หลังกด Publish ใน Firebase แล้ว ให้กลับมาที่หน้านี้และกดปุ่ม <strong className="text-white">"ซิงค์ฐานข้อมูลสดทันที"</strong> ด้านบน ระบบจะดึงข้อมูลเอกสารใหม่จาก Firestore เข้ามาในแอปอัตโนมัติทันที 100%!
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Search & Category Filter Section */}
