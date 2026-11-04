@@ -1,0 +1,6 @@
+{
+  "name": "PUNEHOD AI Thai Chatbot & Support Dashboard",
+  "description": "แชทบอทอัจฉริยะภาษาไทยเชื่อมต่อฐานข้อมูล PUNEHOD Knowledge Base (https://punehod.vercel.app/) พร้อมแดชบอร์ดวิเคราะห์ประวัติสนทนา ระบบความปลอดภัยระดับสากล และรองรับ iOS/Android",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
