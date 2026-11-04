@@ -112,41 +112,6 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Controls & Badges (Right) */}
           <div className="flex items-center gap-2 sm:gap-3">
-            
-            {/* Device Mode Toggle (Desktop / iOS / Android) */}
-            <div className="flex items-center bg-slate-800 p-0.5 rounded-lg border border-slate-700 text-slate-300">
-              <button
-                onClick={() => setDeviceMode('desktop')}
-                className={`p-1.5 rounded-md transition-all text-xs flex items-center gap-1 ${
-                  deviceMode === 'desktop' ? 'bg-blue-600 text-white shadow' : 'hover:text-white'
-                }`}
-                title="โหมดหน้าจอคอมพิวเตอร์ (Desktop View)"
-              >
-                <Monitor className="w-3.5 h-3.5" />
-                <span className="hidden xl:inline text-[11px]">PC</span>
-              </button>
-              <button
-                onClick={() => setDeviceMode('ios')}
-                className={`p-1.5 rounded-md transition-all text-xs flex items-center gap-1 ${
-                  deviceMode === 'ios' ? 'bg-blue-600 text-white shadow' : 'hover:text-white'
-                }`}
-                title="พรีวิวโหมด Apple iOS (iPhone 16)"
-              >
-                <Smartphone className="w-3.5 h-3.5" />
-                <span className="hidden xl:inline text-[11px]">iOS</span>
-              </button>
-              <button
-                onClick={() => setDeviceMode('android')}
-                className={`p-1.5 rounded-md transition-all text-xs flex items-center gap-1 ${
-                  deviceMode === 'android' ? 'bg-blue-600 text-white shadow' : 'hover:text-white'
-                }`}
-                title="พรีวิวโหมด Android (Galaxy S24)"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span className="hidden xl:inline text-[11px]">Android</span>
-              </button>
-            </div>
-
           </div>
         </div>
       </div>

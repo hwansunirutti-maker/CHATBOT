@@ -128,18 +128,11 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                   </span>
                 </h3>
               </div>
-              <p className="text-xs text-slate-300 flex items-center gap-1.5">
-                <span>แหล่งข้อมูลหลัก:</span>
-                <a
-                  href="https://punehod.vercel.app/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-400 hover:text-blue-300 underline font-mono flex items-center gap-1"
-                >
-                  https://punehod.vercel.app/
-                  <ExternalLink className="w-3 h-3" />
-                </a>
+              <p className="text-xs text-slate-300 flex items-center gap-1.5 flex-wrap">
+                <span>ดึงข้อมูลและแสดงผลในแอปโดยตรงจาก:</span>
+                <span className="text-blue-400 font-mono font-medium">https://punehod.vercel.app/</span>
                 <span className="hidden sm:inline">• ตอบสนอง: {syncStatus.latencyMs}ms</span>
+                <span className="text-emerald-400 font-medium ml-1">● ไม่ต้องเข้าหน้าเว็บภายนอก</span>
               </p>
               <div className="text-[11px] text-slate-400">
                 {syncStatus.statusText}
@@ -295,7 +288,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                 </div>
 
                 <div className="flex items-center gap-1 text-blue-400 font-medium group-hover:translate-x-1 transition-transform">
-                  <span>ดูรายละเอียดขั้นตอน</span>
+                  <span>เปิดอ่านคู่มือในแอป</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </div>
               </div>
