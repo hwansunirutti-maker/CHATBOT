@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
 import { INITIAL_KNOWLEDGE_BASE, PUNEHOD_CATEGORIES, INITIAL_ANALYTICS } from './src/data/punehodKnowledge.ts';
 import { KnowledgeItem, ChatSession } from './src/types/punehod.ts';
+import { resolvePunehodResponse } from './src/utils/punehodEngine.ts';
 
 dotenv.config();
 
@@ -416,7 +417,7 @@ ${groundingContext}`;
       const responseTime = Date.now() - startTime;
 
       // Extract category & actions
-      const fallbackData = generateKnowledgeFallback(userQuery);
+      const fallbackData = resolvePunehodResponse(userQuery, knowledgeItems);
 
       // Update analytics
       analyticsData.totalChats += 1;
@@ -440,14 +441,14 @@ ${groundingContext}`;
   }
 
   // High-accuracy fallback engine
-  const fallback = generateKnowledgeFallback(userQuery);
+  const fallback = resolvePunehodResponse(userQuery, knowledgeItems);
   const responseTime = Date.now() - startTime;
 
   analyticsData.totalChats += 1;
   analyticsData.totalMessages += 2;
 
   res.json({
-    reply: fallback.text,
+    reply: fallback.reply,
     source: 'punehod-knowledge-engine',
     responseTimeMs: Math.max(80, responseTime),
     category: fallback.category,

@@ -23,6 +23,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { ChatMessage, ChatSession, KnowledgeItem } from '../types/punehod';
+import { resolvePunehodResponse } from '../utils/punehodEngine';
 
 interface ChatViewProps {
   knowledgeItems: KnowledgeItem[];
@@ -155,25 +156,34 @@ export const ChatView: React.FC<ChatViewProps> = ({
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: text,
-          history: newHistory.slice(-8)
-        })
-      });
+      let data: any = null;
 
-      if (!response.ok) {
-        throw new Error(`HTTP error ${response.status}`);
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: text,
+            history: newHistory.slice(-8)
+          })
+        });
+
+        if (response.ok) {
+          data = await response.json();
+        }
+      } catch (networkErr) {
+        console.warn('API call offline or static host, using in-app knowledge engine:', networkErr);
       }
 
-      const data = await response.json();
+      // If server returned data, use it; otherwise seamlessly resolve via in-app knowledge engine
+      if (!data || !data.reply) {
+        data = resolvePunehodResponse(text, knowledgeItems);
+      }
 
       const botMsg: ChatMessage = {
         id: `bot-${Date.now()}`,
         sender: 'bot',
-        text: data.reply || 'ขออภัยครับ เกิดข้อผิดพลาดในการประมวลผล กรุณาลองใหม่อีกครั้งครับ',
+        text: data.reply,
         timestamp: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
         category: data.category,
         suggestedActions: data.suggestedActions,
@@ -196,15 +206,18 @@ export const ChatView: React.FC<ChatViewProps> = ({
         )
       );
     } catch (err) {
-      console.error('Chat error:', err);
-      const errorMsg: ChatMessage = {
-        id: `bot-err-${Date.now()}`,
+      console.error('Chat resolution error:', err);
+      const fallbackData = resolvePunehodResponse(text, knowledgeItems);
+      const botMsg: ChatMessage = {
+        id: `bot-${Date.now()}`,
         sender: 'bot',
-        text: `⚠️ **ระบบเชื่อมต่อฐานข้อมูลสำรองอัตโนมัติ**\n\nพบปัญหาชั่วคราวในการประมวลผล กรุณาลองถามคำถามอีกครั้ง หรือกดปุ่มด้านล่างเพื่อติดต่อทีมงานช่างเทคนิค PUNEHOD 24 ชั่วโมงได้ทันทีครับ`,
+        text: fallbackData.reply,
         timestamp: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
-        suggestedActions: ['ติดต่อช่างเทคนิค 24 ชั่วโมง', 'คู่มือแก้ Error 0x01', 'ดาวน์โหลดไดรเวอร์']
+        category: fallbackData.category,
+        suggestedActions: fallbackData.suggestedActions,
+        referenceItemIds: fallbackData.referenceItemIds
       };
-      setMessages(prev => [...prev, errorMsg]);
+      setMessages(prev => [...prev, botMsg]);
     } finally {
       setIsLoading(false);
     }
